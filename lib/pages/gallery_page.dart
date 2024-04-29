@@ -1,8 +1,8 @@
+import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:gallery_web/enum/app_connection_status.dart';
-import 'package:provider/provider.dart';
+ import 'package:provider/provider.dart';
 import '../model/image_model.dart';
 import '../provider/gallery_provider.dart';
 import 'image_detail_page.dart';
@@ -107,18 +107,12 @@ class _GalleryPageState extends State<GalleryPage> {
       backgroundColor: Colors.grey.shade900,
       body: Consumer<GalleryProvider>(builder: (context, galleryProvider, _) {
         if (galleryProvider.galleryModel == null) {
-          return Text("no data");
-        }
-        if (galleryProvider.connectionStatus == AppConnectionStatus.loading) {
           return Center(
             child: CircularProgressIndicator(),
           );
         }
+
         return Scaffold(
-          // bottomNavigationBar: galleryProvider.pageConnectionStatus ==
-          //         AppConnectionStatus.loading
-          //     ? CircularProgressIndicator()
-          //     : Container(),
           body: Padding(
             padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
             child: Column(
@@ -142,13 +136,16 @@ class _GalleryPageState extends State<GalleryPage> {
                         child: Row(
                           children: [
                             Icon(Icons.search),
-                            SizedBox(width: 12,),
+                            SizedBox(
+                              width: 12,
+                            ),
                             Expanded(
                               child: TextField(
                                 onChanged: (val) {
-                                  if (val.length > 3) {
-                                    galleryProvider.onSearch();
-                                  }
+                                  EasyDebounce.debounce(
+                                      'search-api',
+                                      Duration(seconds: 1),
+                                      () => galleryProvider.onSearch());
                                 },
                                 controller: galleryProvider.searchController,
                                 decoration: InputDecoration(
@@ -163,31 +160,39 @@ class _GalleryPageState extends State<GalleryPage> {
                   ),
                 ),
                 Expanded(
-                  child: GridView.builder(
-                    controller: _scrollController,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: size.width ~/ 350,
-                      crossAxisSpacing: size.width * 0.02,
-                      mainAxisSpacing: size.width * 0.02,
-                    ),
-                    itemCount: galleryProvider.galleryModel!.hits.length,
-                    itemBuilder: (context, index) {
-                      List<Hits> hits = galleryProvider.galleryModel!.hits;
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ImageDetailPage(
-                                      hits: hits[index],
-                                    )),
-                          );
-                        },
-                        child: buildCard(hits: hits[index]),
-                      );
-                    },
-                    physics: AlwaysScrollableScrollPhysics(),
-                  ),
+                  child: galleryProvider.galleryModel!.hits.isEmpty
+                      ? Center(
+                          child: Text(
+                          "No result found",
+                          style: TextStyle(fontSize: 18),
+                        ))
+                      : GridView.builder(
+                          controller: _scrollController,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: size.width ~/ 350,
+                            crossAxisSpacing: size.width * 0.02,
+                            mainAxisSpacing: size.width * 0.02,
+                          ),
+                          itemCount: galleryProvider.galleryModel!.hits.length,
+                          itemBuilder: (context, index) {
+                            List<Hits> hits =
+                                galleryProvider.galleryModel!.hits;
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ImageDetailPage(
+                                            hits: hits[index],
+                                          )),
+                                );
+                              },
+                              child: buildCard(hits: hits[index]),
+                            );
+                          },
+                          physics: AlwaysScrollableScrollPhysics(),
+                        ),
                 ),
               ],
             ),

@@ -1,4 +1,4 @@
-import 'dart:convert';
+ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:gallery_web/constants/app_connstants.dart';
@@ -15,6 +15,7 @@ class GalleryProvider with ChangeNotifier {
   TextEditingController searchController = TextEditingController();
 
   loadGallery() async {
+    currPage = 1;
     try {
       connectionStatus = AppConnectionStatus.loading;
       notifyListeners();
@@ -22,8 +23,6 @@ class GalleryProvider with ChangeNotifier {
           '?key=${AppConstants.apiKey}'
           '&per_page=20'
           '&page=1';
-
-      print(url);
 
       final response = await http.get(Uri.parse(url));
 
@@ -48,6 +47,8 @@ class GalleryProvider with ChangeNotifier {
           '&q=${searchController.text}'
           '&per_page=20'
           '&page=1';
+
+      print(url);
 
       final response = await http.get(Uri.parse(url));
 

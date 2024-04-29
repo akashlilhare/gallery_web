@@ -17,6 +17,13 @@ class ImageDetailPage extends StatelessWidget {
             horizontal: size.width * 0.1, vertical: size.height * 0.1),
         child: Column(
           children: [
+
+            Container(padding:EdgeInsets.all(8),decoration: BoxDecoration(
+              color: Colors.white,
+                
+                shape: BoxShape.circle),
+            child: CloseButton(color: Colors.black,),),
+            SizedBox(height: 10,),
             Expanded(
               child: Container(
                 alignment: Alignment.center,
